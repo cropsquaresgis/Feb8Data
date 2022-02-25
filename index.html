@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css"><link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script><script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="data/Feb8ParcelData_3.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:16, minZoom:1
+        })
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'feet',
+            secondaryLengthUnit: 'miles',
+            primaryAreaUnit: 'sqfeet',
+            secondaryAreaUnit: 'sqmiles'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+            if (bounds_group.getLayers().length) {
+                map.fitBounds(bounds_group.getBounds());
+            }
+            map.setMaxBounds(map.getBounds());
+        }
+        map.createPane('pane_GoogleSatellite_0');
+        map.getPane('pane_GoogleSatellite_0').style.zIndex = 400;
+        var layer_GoogleSatellite_0 = L.tileLayer('http://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleSatellite_0',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 16,
+            minNativeZoom: 0,
+            maxNativeZoom: 18
+        });
+        layer_GoogleSatellite_0;
+        map.addLayer(layer_GoogleSatellite_0);
+        map.createPane('pane_Jan31NDVIImagery_1');
+        map.getPane('pane_Jan31NDVIImagery_1').style.zIndex = 401;
+        var img_Jan31NDVIImagery_1 = 'data/Jan31NDVIImagery_1.png';
+        var img_bounds_Jan31NDVIImagery_1 = [[43.88601847624788,-88.89713801290077],[44.25116465432766,-88.35468392354383]];
+        var layer_Jan31NDVIImagery_1 = new L.imageOverlay(img_Jan31NDVIImagery_1,
+                                              img_bounds_Jan31NDVIImagery_1,
+                                              {pane: 'pane_Jan31NDVIImagery_1'});
+        bounds_group.addLayer(layer_Jan31NDVIImagery_1);
+        map.addLayer(layer_Jan31NDVIImagery_1);
+        map.createPane('pane_Feb8NDVIImagery_2');
+        map.getPane('pane_Feb8NDVIImagery_2').style.zIndex = 402;
+        var img_Feb8NDVIImagery_2 = 'data/Feb8NDVIImagery_2.png';
+        var img_bounds_Feb8NDVIImagery_2 = [[43.88601847626901,-88.89713801286943],[44.25116465440552,-88.35468392363596]];
+        var layer_Feb8NDVIImagery_2 = new L.imageOverlay(img_Feb8NDVIImagery_2,
+                                              img_bounds_Feb8NDVIImagery_2,
+                                              {pane: 'pane_Feb8NDVIImagery_2'});
+        bounds_group.addLayer(layer_Feb8NDVIImagery_2);
+        map.addLayer(layer_Feb8NDVIImagery_2);
+        function pop_Feb8ParcelData_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">PARCELID</th>\
+                        <td>' + (feature.properties['PARCELID'] !== null ? autolinker.link(feature.properties['PARCELID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">GISACRE</th>\
+                        <td>' + (feature.properties['GISACRE'] !== null ? autolinker.link(feature.properties['GISACRE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Jan31_NDVI</th>\
+                        <td>' + (feature.properties['Jan31_NDVI'] !== null ? autolinker.link(feature.properties['Jan31_NDVI'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Feb8_NDVI</th>\
+                        <td>' + (feature.properties['Feb8_NDVI'] !== null ? autolinker.link(feature.properties['Feb8_NDVI'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_Feb8ParcelData_3_0(feature) {
+            if (feature.properties['Feb8_NDVI'] >= -0.075172 && feature.properties['Feb8_NDVI'] <= -0.022605 ) {
+                return {
+                pane: 'pane_Feb8ParcelData_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(247,252,245,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Feb8_NDVI'] >= -0.022605 && feature.properties['Feb8_NDVI'] <= -0.002806 ) {
+                return {
+                pane: 'pane_Feb8ParcelData_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(232,246,227,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Feb8_NDVI'] >= -0.002806 && feature.properties['Feb8_NDVI'] <= 0.020345 ) {
+                return {
+                pane: 'pane_Feb8ParcelData_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(208,236,201,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Feb8_NDVI'] >= 0.020345 && feature.properties['Feb8_NDVI'] <= 0.048277 ) {
+                return {
+                pane: 'pane_Feb8ParcelData_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(178,224,171,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Feb8_NDVI'] >= 0.048277 && feature.properties['Feb8_NDVI'] <= 0.083359 ) {
+                return {
+                pane: 'pane_Feb8ParcelData_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(142,208,140,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Feb8_NDVI'] >= 0.083359 && feature.properties['Feb8_NDVI'] <= 0.121468 ) {
+                return {
+                pane: 'pane_Feb8ParcelData_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(102,189,111,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Feb8_NDVI'] >= 0.121468 && feature.properties['Feb8_NDVI'] <= 0.165071 ) {
+                return {
+                pane: 'pane_Feb8ParcelData_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(61,167,90,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Feb8_NDVI'] >= 0.165071 && feature.properties['Feb8_NDVI'] <= 0.219275 ) {
+                return {
+                pane: 'pane_Feb8ParcelData_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(36,140,69,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Feb8_NDVI'] >= 0.219275 && feature.properties['Feb8_NDVI'] <= 0.298490 ) {
+                return {
+                pane: 'pane_Feb8ParcelData_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(3,112,46,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Feb8_NDVI'] >= 0.298490 && feature.properties['Feb8_NDVI'] <= 0.413376 ) {
+                return {
+                pane: 'pane_Feb8ParcelData_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(0,68,27,1.0)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_Feb8ParcelData_3');
+        map.getPane('pane_Feb8ParcelData_3').style.zIndex = 403;
+        map.getPane('pane_Feb8ParcelData_3').style['mix-blend-mode'] = 'normal';
+        var layer_Feb8ParcelData_3 = new L.geoJson(json_Feb8ParcelData_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Feb8ParcelData_3',
+            layerName: 'layer_Feb8ParcelData_3',
+            pane: 'pane_Feb8ParcelData_3',
+            onEachFeature: pop_Feb8ParcelData_3,
+            style: style_Feb8ParcelData_3_0,
+        });
+        bounds_group.addLayer(layer_Feb8ParcelData_3);
+        map.addLayer(layer_Feb8ParcelData_3);
+        map.createPane('pane_GoogleRoads_4');
+        map.getPane('pane_GoogleRoads_4').style.zIndex = 404;
+        var layer_GoogleRoads_4 = L.tileLayer('https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleRoads_4',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 16,
+            minNativeZoom: 0,
+            maxNativeZoom: 18
+        });
+        layer_GoogleRoads_4;
+        map.addLayer(layer_GoogleRoads_4);
+        var osmGeocoder = new L.Control.Geocoder({
+            collapsed: true,
+            position: 'topleft',
+            text: 'Search',
+            title: 'Testing'
+        }).addTo(map);
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .className += ' fa fa-search';
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .title += 'Search for a place';
+        var baseMaps = {};
+        L.control.layers(baseMaps,{"Google Roads": layer_GoogleRoads_4,'Feb8 Parcel Data<br /><table><tr><td style="text-align: center;"><img src="legend/Feb8ParcelData_3_007500230.png" /></td><td>-0.075 - -0.023</td></tr><tr><td style="text-align: center;"><img src="legend/Feb8ParcelData_3_002300031.png" /></td><td>-0.023 - -0.003</td></tr><tr><td style="text-align: center;"><img src="legend/Feb8ParcelData_3_00030022.png" /></td><td>-0.003 - 0.02</td></tr><tr><td style="text-align: center;"><img src="legend/Feb8ParcelData_3_00200483.png" /></td><td>0.02 - 0.048</td></tr><tr><td style="text-align: center;"><img src="legend/Feb8ParcelData_3_004800834.png" /></td><td>0.048 - 0.083</td></tr><tr><td style="text-align: center;"><img src="legend/Feb8ParcelData_3_008301215.png" /></td><td>0.083 - 0.121</td></tr><tr><td style="text-align: center;"><img src="legend/Feb8ParcelData_3_012101656.png" /></td><td>0.121 - 0.165</td></tr><tr><td style="text-align: center;"><img src="legend/Feb8ParcelData_3_016502197.png" /></td><td>0.165 - 0.219</td></tr><tr><td style="text-align: center;"><img src="legend/Feb8ParcelData_3_021902988.png" /></td><td>0.219 - 0.298</td></tr><tr><td style="text-align: center;"><img src="legend/Feb8ParcelData_3_029804139.png" /></td><td>0.298 - 0.413</td></tr></table>': layer_Feb8ParcelData_3,"Feb8 NDVI Imagery": layer_Feb8NDVIImagery_2,"Jan31 NDVI Imagery": layer_Jan31NDVIImagery_1,"Google Satellite": layer_GoogleSatellite_0,}).addTo(map);
+        setBounds();
+        L.ImageOverlay.include({
+            getBounds: function () {
+                return this._bounds;
+            }
+        });
+        </script>
+    </body>
+</html>
